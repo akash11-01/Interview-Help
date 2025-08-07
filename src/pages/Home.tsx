@@ -488,7 +488,7 @@ function SignedOutHome() {
                 size="lg"
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 text-lg"
               >
-                Get Started Free
+                Dive in
               </Button>
             </SignUpButton>
             <SignInButton mode="modal">
@@ -557,7 +557,7 @@ function SignedOutHome() {
             makes technical interviews so much more efficient."
           </blockquote>
           <cite className="font-semibold">
-            - Sarah Johnson, Tech Lead at StartupCorp
+            - @Dummy User
           </cite>
         </div>
 
@@ -574,7 +574,7 @@ function SignedOutHome() {
               size="lg"
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 text-lg"
             >
-              Start Your Free Trial
+              Schedule Your Interview
             </Button>
           </SignUpButton>
         </div>
