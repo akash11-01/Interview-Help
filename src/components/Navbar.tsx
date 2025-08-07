@@ -10,6 +10,8 @@ import DasboardBtn from "./DashboardBtn";
 import JoinInterviewNavButton from "./JoinInterviewNavButton";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import AuthenticatedWrapper from "./AuthenticatedWrapper";
+import StreamClientProvider from "./providers/StreamClientProvider";
 
 function Navbar() {
   return (
@@ -34,7 +36,11 @@ function Navbar() {
           <SignedIn>
             <div className="flex items-center space-x-3">
               <DasboardBtn />
-              <JoinInterviewNavButton />
+              <AuthenticatedWrapper>
+                <StreamClientProvider>
+                  <JoinInterviewNavButton />
+                </StreamClientProvider>
+              </AuthenticatedWrapper>
             </div>
             <UserButton
               appearance={{
