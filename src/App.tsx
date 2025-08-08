@@ -10,6 +10,10 @@ import MeetingPage from "./pages/MeetingPage";
 import RecordingsPage from "./pages/RecordingsPage";
 import SchedulePage from "./pages/SchedulePage";
 import FeedbackPage from "./pages/FeedbackPage";
+import AIInterviewPage from "./pages/AIInterviewPage";
+import AIInterviewForm from "./pages/AIInterviewForm";
+import AIInterviewComplete from "./pages/AIInterviewComplete";
+import AiQuestionsList from "./components/AiQuestionsList";
 import AuthenticatedWrapper from "./components/AuthenticatedWrapper";
 
 export default function App() {
@@ -54,6 +58,22 @@ export default function App() {
                               path="/feedback/:interviewId"
                               element={<FeedbackPage />}
                             />
+                            <Route
+                              path="/ai-interview"
+                              element={<AIInterviewPage />}
+                            />
+                            <Route
+                              path="/ai-interview/setup"
+                              element={<AIInterviewForm />}
+                            />
+                            <Route
+                              path="/ai-interview/questions"
+                              element={<AiQuestionsList />}
+                            />
+                            <Route
+                              path="/ai-interview/complete"
+                              element={<AIInterviewComplete />}
+                            />
                           </Routes>
                         </main>
                       </StreamClientProvider>
@@ -72,6 +92,19 @@ export default function App() {
                 <Route path="/recordings" element={<RedirectToSignIn />} />
                 <Route
                   path="/feedback/:interviewId"
+                  element={<RedirectToSignIn />}
+                />
+                <Route path="/ai-interview" element={<RedirectToSignIn />} />
+                <Route
+                  path="/ai-interview/setup"
+                  element={<RedirectToSignIn />}
+                />
+                <Route
+                  path="/ai-interview/questions"
+                  element={<RedirectToSignIn />}
+                />
+                <Route
+                  path="/ai-interview/complete"
                   element={<RedirectToSignIn />}
                 />
               </Routes>

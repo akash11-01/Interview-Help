@@ -7,6 +7,7 @@ import { api } from "../../convex/_generated/api";
 import { QUICK_ACTIONS } from "../constants";
 import { useUserRole } from "../hooks/useUserRole";
 import ActionCard from "@/components/ActionCard";
+import AIInterviewCard from "@/components/AIInterviewCard";
 import MeetingModal from "@/components/MeetingModal";
 import MeetingCard from "@/components/MeetingCard";
 import {
@@ -228,6 +229,20 @@ function SignedInHome() {
             </div>
           </div>
 
+          {/* AI INTERVIEW SECTION */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold">AI-Powered Interviews</h2>
+                <p className="text-muted-foreground">
+                  Experience next-generation interview technology
+                </p>
+              </div>
+            </div>
+
+            <AIInterviewCard userType="interviewer" />
+          </div>
+
           {/* RECENT INTERVIEWS SECTION */}
           {interviews && interviews.length > 0 && (
             <div>
@@ -338,7 +353,7 @@ function SignedInHome() {
           </div>
 
           {/* QUICK ACTIONS FOR CANDIDATES */}
-          {/* <div>
+          <div>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-2xl font-bold">Quick Actions</h2>
@@ -409,7 +424,21 @@ function SignedInHome() {
                 </div>
               </div>
             </div>
-          </div> */}
+          </div>
+
+          {/* AI INTERVIEW SECTION FOR CANDIDATES */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold">AI Interview Practice</h2>
+                <p className="text-muted-foreground">
+                  Improve your skills with AI-powered practice sessions
+                </p>
+              </div>
+            </div>
+
+            <AIInterviewCard userType="candidate" />
+          </div>
 
           {/* INTERVIEWS SECTION */}
           <div>
@@ -556,9 +585,7 @@ function SignedOutHome() {
             integration of video calls, code collaboration, and feedback systems
             makes technical interviews so much more efficient."
           </blockquote>
-          <cite className="font-semibold">
-            - @Dummy User
-          </cite>
+          <cite className="font-semibold">- @Dummy User</cite>
         </div>
 
         {/* CTA SECTION */}
