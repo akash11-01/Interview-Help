@@ -453,7 +453,7 @@ http.route({
 http.route({
   path: "/generate-feedback",
   method: "POST",
-  handler: httpAction(async (ctx, request) => {
+  handler: httpAction(async (_, request) => {
     console.log("=== GENERATE FEEDBACK ENDPOINT CALLED ===");
 
     // Add CORS headers
