@@ -56,13 +56,6 @@ export const QUICK_ACTIONS = [
     color: "orange-500",
     gradient: "from-orange-500/10 via-orange-500/5 to-transparent",
   },
-  {
-    icon: Bot,
-    title: "AI Interview",
-    description: "Practice with AI assistance",
-    color: "violet-500",
-    gradient: "from-violet-500/10 via-violet-500/5 to-transparent",
-  },
 ];
 
 // Candidate-specific actions
