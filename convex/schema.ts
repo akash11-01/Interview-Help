@@ -29,6 +29,24 @@ export default defineSchema({
     interviewerId: v.string(),
     interviewId: v.id("interviews"),
   }).index("by_interview_id", ["interviewId"]),
+
+  aiInterviews: defineTable({
+    jobPosition: v.string(),
+    jobDescription: v.string(),
+    duration: v.string(),
+    type: v.string(),
+    questions: v.array(
+      v.object({
+        question: v.string(),
+        type: v.string(),
+      })
+    ),
+    userId: v.string(), // Clerk ID of the user who created this
+    createdAt: v.number(),
+    source: v.string(), // "openrouter-ai" or "fallback"
+  })
+    .index("by_user_id", ["userId"])
+    .index("by_created_at", ["createdAt"]),
 });
 
 // https://dynamic-yak-36.clerk.accounts.dev

@@ -149,7 +149,7 @@ http.route({
       const body = await request.json();
       console.log("Request body:", body);
 
-      const { jobPosition, jobDescription, duration, type } = body;
+      const { jobPosition, jobDescription, duration, type, userId } = body;
 
       // Validate required fields
       if (!jobPosition || !jobDescription || !duration || !type) {
@@ -195,10 +195,39 @@ http.route({
           },
         ];
 
+        // Store the fallback questions in the database if userId is provided
+        let fallbackAiInterviewId = null;
+        if (userId) {
+          try {
+            fallbackAiInterviewId = await ctx.runMutation(
+              api.aiInterviews.createAiInterview,
+              {
+                jobPosition,
+                jobDescription,
+                duration,
+                type,
+                questions: testQuestions,
+                userId,
+                source: "fallback",
+              }
+            );
+            console.log(
+              "Fallback AI Interview stored in database with ID:",
+              fallbackAiInterviewId
+            );
+          } catch (dbError) {
+            console.error(
+              "Error storing fallback AI interview in database:",
+              dbError
+            );
+          }
+        }
+
         return new Response(
           JSON.stringify({
             success: true,
             interviewQuestions: testQuestions,
+            aiInterviewId: fallbackAiInterviewId,
             metadata: {
               jobPosition,
               duration,
@@ -319,10 +348,37 @@ Make sure the questions are relevant to the job position and description provide
 
       console.log("Generated questions:", interviewQuestions);
 
+      // Store the AI interview in the database if userId is provided
+      let aiInterviewId = null;
+      if (userId) {
+        try {
+          aiInterviewId = await ctx.runMutation(
+            api.aiInterviews.createAiInterview,
+            {
+              jobPosition,
+              jobDescription,
+              duration,
+              type,
+              questions: interviewQuestions,
+              userId,
+              source: "openrouter-ai",
+            }
+          );
+          console.log(
+            "AI Interview stored in database with ID:",
+            aiInterviewId
+          );
+        } catch (dbError) {
+          console.error("Error storing AI interview in database:", dbError);
+          // Continue without failing the request
+        }
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
           interviewQuestions: interviewQuestions,
+          aiInterviewId: aiInterviewId,
           metadata: {
             jobPosition,
             duration,

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bot, Clock, Briefcase, FileText, Sparkles } from "lucide-react";
-import { QUESTION_PROMPT } from "@/constants";
+// import { QUESTION_PROMPT } from "@/constants";
 
 interface FormData {
   jobPosition: string;
@@ -24,6 +25,7 @@ interface FormData {
 
 export default function AIInterviewForm() {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     jobPosition: "",
@@ -49,6 +51,13 @@ export default function AIInterviewForm() {
       console.log("Convex HTTP URL from env:", convexHttpUrl);
       console.log("Full API URL:", apiUrl);
       console.log("Form data being sent:", formData);
+      console.log("User ID:", user?.id);
+
+      // Prepare data to send including userId for database storage
+      const requestData = {
+        ...formData,
+        userId: user?.id, // Include user ID for database storage
+      };
 
       // Make POST API call to generate questions
       const response = await fetch(apiUrl, {
@@ -56,7 +65,7 @@ export default function AIInterviewForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestData),
       });
 
       console.log("Response received:");
