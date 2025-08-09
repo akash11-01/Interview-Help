@@ -14,6 +14,7 @@ import AIInterviewPage from "./pages/AIInterviewPage";
 import AIInterviewForm from "./pages/AIInterviewForm";
 import AIInterviewComplete from "./pages/AIInterviewComplete";
 import AiQuestionsList from "./components/AiQuestionsList";
+import AIInterviewLive from "./components/AIInterviewLive";
 import AuthenticatedWrapper from "./components/AuthenticatedWrapper";
 
 export default function App() {
@@ -71,6 +72,10 @@ export default function App() {
                               element={<AiQuestionsList />}
                             />
                             <Route
+                              path="/ai-interview/live"
+                              element={<AIInterviewLive />}
+                            />
+                            <Route
                               path="/ai-interview/complete"
                               element={<AIInterviewComplete />}
                             />
@@ -101,6 +106,10 @@ export default function App() {
                 />
                 <Route
                   path="/ai-interview/questions"
+                  element={<RedirectToSignIn />}
+                />
+                <Route
+                  path="/ai-interview/live"
                   element={<RedirectToSignIn />}
                 />
                 <Route
