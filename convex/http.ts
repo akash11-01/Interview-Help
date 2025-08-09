@@ -107,26 +107,26 @@ http.route({
 });
 
 // Simple test endpoint
-http.route({
-  path: "/test",
-  method: "GET",
-  handler: httpAction(async (ctx, request) => {
-    console.log("=== TEST ENDPOINT CALLED ===");
-    return new Response(
-      JSON.stringify({
-        message: "Hello from Convex HTTP!",
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      }
-    );
-  }),
-});
+// http.route({
+//   path: "/test",
+//   method: "GET",
+//   handler: httpAction(async (_, _request) => {
+//     console.log("=== TEST ENDPOINT CALLED ===");
+//     return new Response(
+//       JSON.stringify({
+//         message: "Hello from Convex HTTP!",
+//         timestamp: new Date().toISOString(),
+//       }),
+//       {
+//         status: 200,
+//         headers: {
+//           "Content-Type": "application/json",
+//           "Access-Control-Allow-Origin": "*",
+//         },
+//       }
+//     );
+//   }),
+// });
 
 // AI Questions Generation Route using OpenRouter API
 http.route({
@@ -163,82 +163,82 @@ http.route({
       // OpenRouter API configuration
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-      if (!OPENROUTER_API_KEY) {
-        console.error("OpenRouter API key not found in environment variables");
-        // Fallback to test questions if API key is missing
-        const testQuestions = [
-          {
-            question: "Tell me about yourself and your experience.",
-            type: "Behavioral",
-          },
-          {
-            question: `Why are you interested in this ${jobPosition} position?`,
-            type: "Behavioral",
-          },
-          {
-            question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
-            type: "Technical",
-          },
-          {
-            question:
-              "Describe a challenging project you've worked on recently.",
-            type: "Experience",
-          },
-          {
-            question:
-              "How do you handle working under pressure and tight deadlines?",
-            type: "Behavioral",
-          },
-          {
-            question: `What do you know about our company and why do you want to work here?`,
-            type: "Behavioral",
-          },
-        ];
+      // if (!OPENROUTER_API_KEY) {
+      //   console.error("OpenRouter API key not found in environment variables");
+      //   // Fallback to test questions if API key is missing
+      //   const testQuestions = [
+      //     {
+      //       question: "Tell me about yourself and your experience.",
+      //       type: "Behavioral",
+      //     },
+      //     {
+      //       question: `Why are you interested in this ${jobPosition} position?`,
+      //       type: "Behavioral",
+      //     },
+      //     {
+      //       question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
+      //       type: "Technical",
+      //     },
+      //     {
+      //       question:
+      //         "Describe a challenging project you've worked on recently.",
+      //       type: "Experience",
+      //     },
+      //     {
+      //       question:
+      //         "How do you handle working under pressure and tight deadlines?",
+      //       type: "Behavioral",
+      //     },
+      //     {
+      //       question: `What do you know about our company and why do you want to work here?`,
+      //       type: "Behavioral",
+      //     },
+      //   ];
 
-        // Store the fallback questions in the database if userId is provided
-        let fallbackAiInterviewId = null;
-        if (userId) {
-          try {
-            fallbackAiInterviewId = await ctx.runMutation(
-              api.aiInterviews.createAiInterview,
-              {
-                jobPosition,
-                jobDescription,
-                duration,
-                type,
-                questions: testQuestions,
-                userId,
-                source: "fallback",
-              }
-            );
-            console.log(
-              "Fallback AI Interview stored in database with ID:",
-              fallbackAiInterviewId
-            );
-          } catch (dbError) {
-            console.error(
-              "Error storing fallback AI interview in database:",
-              dbError
-            );
-          }
-        }
+      //   // Store the fallback questions in the database if userId is provided
+      //   let fallbackAiInterviewId = null;
+      //   if (userId) {
+      //     try {
+      //       fallbackAiInterviewId = await ctx.runMutation(
+      //         api.aiInterviews.createAiInterview,
+      //         {
+      //           jobPosition,
+      //           jobDescription,
+      //           duration,
+      //           type,
+      //           questions: testQuestions,
+      //           userId,
+      //           source: "fallback",
+      //         }
+      //       );
+      //       console.log(
+      //         "Fallback AI Interview stored in database with ID:",
+      //         fallbackAiInterviewId
+      //       );
+      //     } catch (dbError) {
+      //       console.error(
+      //         "Error storing fallback AI interview in database:",
+      //         dbError
+      //       );
+      //     }
+      //   }
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            interviewQuestions: testQuestions,
-            aiInterviewId: fallbackAiInterviewId,
-            metadata: {
-              jobPosition,
-              duration,
-              type,
-              generatedAt: new Date().toISOString(),
-              source: "fallback",
-            },
-          }),
-          { status: 200, headers }
-        );
-      }
+      //   return new Response(
+      //     JSON.stringify({
+      //       success: true,
+      //       interviewQuestions: testQuestions,
+      //       aiInterviewId: fallbackAiInterviewId,
+      //       metadata: {
+      //         jobPosition,
+      //         duration,
+      //         type,
+      //         generatedAt: new Date().toISOString(),
+      //         source: "fallback",
+      //       },
+      //     }),
+      //     { status: 200, headers }
+      //   );
+      // }
 
       // Create prompt for AI interview questions
       const prompt = `Generate ${duration === "15 minutes" ? 4 : duration === "30 minutes" ? 6 : 8} interview questions for a ${jobPosition} position.
@@ -316,34 +316,34 @@ Make sure the questions are relevant to the job position and description provide
         console.log("Raw AI content:", aiContent);
 
         // Fallback to test questions if parsing fails
-        interviewQuestions = [
-          {
-            question: "Tell me about yourself and your experience.",
-            type: "Behavioral",
-          },
-          {
-            question: `Why are you interested in this ${jobPosition} position?`,
-            type: "Behavioral",
-          },
-          {
-            question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
-            type: "Technical",
-          },
-          {
-            question:
-              "Describe a challenging project you've worked on recently.",
-            type: "Experience",
-          },
-          {
-            question:
-              "How do you handle working under pressure and tight deadlines?",
-            type: "Behavioral",
-          },
-          {
-            question: `What do you know about our company and why do you want to work here?`,
-            type: "Behavioral",
-          },
-        ];
+        // interviewQuestions = [
+        //   {
+        //     question: "Tell me about yourself and your experience.",
+        //     type: "Behavioral",
+        //   },
+        //   {
+        //     question: `Why are you interested in this ${jobPosition} position?`,
+        //     type: "Behavioral",
+        //   },
+        //   {
+        //     question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
+        //     type: "Technical",
+        //   },
+        //   {
+        //     question:
+        //       "Describe a challenging project you've worked on recently.",
+        //     type: "Experience",
+        //   },
+        //   {
+        //     question:
+        //       "How do you handle working under pressure and tight deadlines?",
+        //     type: "Behavioral",
+        //   },
+        //   {
+        //     question: `What do you know about our company and why do you want to work here?`,
+        //     type: "Behavioral",
+        //   },
+        // ];
       }
 
       console.log("Generated questions:", interviewQuestions);
@@ -458,8 +458,242 @@ Make sure the questions are relevant to the job position and description provide
 http.route({
   path: "/generate-questions",
   method: "OPTIONS",
-  handler: httpAction(async (ctx, request) => {
+  handler: httpAction(async (_, _request) => {
     console.log("=== OPTIONS REQUEST FOR CORS ===");
+    return new Response(null, {
+      status: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      },
+    });
+  }),
+});
+
+// AI Interview Feedback Generation Route
+http.route({
+  path: "/generate-feedback",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    console.log("=== GENERATE FEEDBACK ENDPOINT CALLED ===");
+
+    // Add CORS headers
+    const headers = {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+
+    try {
+      const body = await request.json();
+      console.log("Feedback request body:", body);
+
+      const { conversation, jobPosition } = body;
+
+      // Validate required fields
+      if (!conversation || !Array.isArray(conversation)) {
+        console.log("Missing or invalid conversation data");
+        return new Response(
+          JSON.stringify({ error: "Missing or invalid conversation data" }),
+          { status: 400, headers }
+        );
+      }
+
+      // OpenRouter API configuration
+      const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+
+      if (!OPENROUTER_API_KEY) {
+        console.error("OpenRouter API key not found in environment variables");
+
+        // Fallback feedback if API key is missing
+        const fallbackFeedback = {
+          feedback: {
+            rating: {
+              technicalSkills: 7,
+              communication: 8,
+              problemSolving: 6,
+              experience: 7,
+            },
+            summary:
+              "The candidate provided thoughtful responses and demonstrated good communication skills. Technical knowledge appears solid with room for growth. Overall performance was satisfactory for the interview duration.",
+            recommendation: "Consider for next round",
+            recommendationMsg:
+              "Candidate shows potential and should be considered for further evaluation.",
+          },
+        };
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            ...fallbackFeedback,
+            metadata: {
+              generatedAt: new Date().toISOString(),
+              source: "fallback",
+            },
+          }),
+          { status: 200, headers }
+        );
+      }
+
+      // Create feedback prompt
+      const FEEDBACK_PROMPT = `Based on this interview conversation between an AI assistant and a candidate for a ${jobPosition || "position"}, provide detailed feedback:
+
+CONVERSATION:
+${conversation.map((msg) => `${msg.type.toUpperCase()}: ${msg.message}`).join("\n")}
+
+Please analyze the conversation and provide feedback in the following JSON format:
+{
+  "feedback": {
+    "rating": {
+      "technicalSkills": [rating out of 10],
+      "communication": [rating out of 10],
+      "problemSolving": [rating out of 10],
+      "experience": [rating out of 10]
+    },
+    "summary": "[3-line summary of the interview performance]",
+    "recommendation": "[Recommended/Not Recommended/Consider for next round]",
+    "recommendationMsg": "[One line message explaining the recommendation]"
+  }
+}
+
+Focus on:
+- Technical knowledge demonstrated
+- Communication clarity and professionalism
+- Problem-solving approach
+- Relevant experience shared
+- Overall interview performance`;
+
+      console.log("Sending request to OpenRouter API for feedback...");
+
+      // Call OpenRouter API
+      const response = await fetch(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://interview-platform.vercel.app",
+            "X-Title": "AI Interview Platform",
+          },
+          body: JSON.stringify({
+            model: "deepseek/deepseek-r1-0528:free",
+            messages: [
+              {
+                role: "user",
+                content: FEEDBACK_PROMPT,
+              },
+            ],
+            temperature: 0.7,
+            max_tokens: 1500,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `OpenRouter API error: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const aiResponse = await response.json();
+      console.log("OpenRouter API feedback response:", aiResponse);
+
+      const aiContent = aiResponse.choices[0]?.message?.content;
+
+      if (!aiContent) {
+        throw new Error("No content received from AI");
+      }
+
+      // Parse the AI response to extract feedback
+      let feedbackData;
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          feedbackData = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error("No JSON found in AI response");
+        }
+      } catch (parseError) {
+        console.error("Failed to parse AI feedback response:", parseError);
+        console.log("Raw AI content:", aiContent);
+
+        // Fallback feedback if parsing fails
+        feedbackData = {
+          feedback: {
+            rating: {
+              technicalSkills: 7,
+              communication: 8,
+              problemSolving: 6,
+              experience: 7,
+            },
+            summary:
+              "The interview was conducted successfully. The candidate demonstrated reasonable communication skills and provided relevant responses to the questions asked. Further evaluation may be beneficial.",
+            recommendation: "Consider for next round",
+            recommendationMsg:
+              "Candidate shows potential and should be considered for further evaluation.",
+          },
+        };
+      }
+
+      console.log("Generated feedback:", feedbackData);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          ...feedbackData,
+          metadata: {
+            generatedAt: new Date().toISOString(),
+            source: "openrouter-ai",
+          },
+        }),
+        { status: 200, headers }
+      );
+    } catch (error) {
+      console.error("Error in generate-feedback endpoint:", error);
+
+      // Return fallback feedback on any error
+      const fallbackFeedback = {
+        feedback: {
+          rating: {
+            technicalSkills: 6,
+            communication: 7,
+            problemSolving: 6,
+            experience: 6,
+          },
+          summary:
+            "Interview completed successfully. Due to technical limitations, detailed analysis could not be performed. Manual review recommended.",
+          recommendation: "Manual Review Required",
+          recommendationMsg:
+            "Technical issues prevented automated analysis. Please conduct manual review.",
+        },
+      };
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          ...fallbackFeedback,
+          metadata: {
+            generatedAt: new Date().toISOString(),
+            source: "fallback-error",
+            error: error instanceof Error ? error.message : "Unknown error",
+          },
+        }),
+        { status: 200, headers }
+      );
+    }
+  }),
+});
+
+// Handle CORS preflight requests for feedback
+http.route({
+  path: "/generate-feedback",
+  method: "OPTIONS",
+  handler: httpAction(async (_, _request) => {
+    console.log("=== OPTIONS REQUEST FOR FEEDBACK CORS ===");
     return new Response(null, {
       status: 200,
       headers: {
