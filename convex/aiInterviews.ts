@@ -45,3 +45,4 @@ export const getAiInterviewById = query({
     return await ctx.db.get(args.id);
   },
 });
+
