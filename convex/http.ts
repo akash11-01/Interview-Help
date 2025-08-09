@@ -106,28 +106,6 @@ http.route({
   }),
 });
 
-// Simple test endpoint
-// http.route({
-//   path: "/test",
-//   method: "GET",
-//   handler: httpAction(async (_, _request) => {
-//     console.log("=== TEST ENDPOINT CALLED ===");
-//     return new Response(
-//       JSON.stringify({
-//         message: "Hello from Convex HTTP!",
-//         timestamp: new Date().toISOString(),
-//       }),
-//       {
-//         status: 200,
-//         headers: {
-//           "Content-Type": "application/json",
-//           "Access-Control-Allow-Origin": "*",
-//         },
-//       }
-//     );
-//   }),
-// });
-
 // AI Questions Generation Route using OpenRouter API
 http.route({
   path: "/generate-questions",
