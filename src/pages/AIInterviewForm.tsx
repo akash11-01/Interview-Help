@@ -84,11 +84,13 @@ export default function AIInterviewForm() {
       const result = await response.json();
       console.log("API Response parsed:", result);
 
-      // Navigate to questions list page with the generated questions
+      // Navigate directly to questions page with the generated interview details
       navigate("/ai-interview/questions", {
         state: {
           questionsList: result.interviewQuestions,
           formData: formData,
+          aiInterviewId: result.aiInterviewId,
+          metadata: result.metadata,
         },
       });
     } catch (error) {

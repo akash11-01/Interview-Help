@@ -1,8 +1,38 @@
-import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, Trophy, BarChart3, Home, RotateCcw } from "lucide-react";
+import {
+  Award,
+  Brain,
+  CheckCircle,
+  Clock,
+  Code,
+  FileText,
+  Home,
+  Lightbulb,
+  MessageCircle,
+  RotateCcw,
+  Target,
+} from "lucide-react";
 import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+interface ConversationMessage {
+  type: "ai" | "user";
+  message: string;
+  timestamp: Date;
+}
+
+interface FeedbackData {
+  rating: {
+    technicalSkills: number;
+    communication: number;
+    problemSolving: number;
+    experience: number;
+  };
+  summary: string;
+  recommendation: string;
+  recommendationMsg: string;
+}
 
 interface LocationState {
   completedQuestions: number;
@@ -13,6 +43,9 @@ interface LocationState {
     duration: string;
     type: string;
   };
+  conversation?: ConversationMessage[];
+  feedback?: FeedbackData;
+  timeElapsed?: number;
 }
 
 export default function AIInterviewComplete() {
@@ -31,10 +64,16 @@ export default function AIInterviewComplete() {
     return null;
   }
 
-  const { completedQuestions, totalQuestions, formData } = state;
-  const completionRate = Math.round(
-    (completedQuestions / totalQuestions) * 100
-  );
+  const {
+    // completedQuestions,
+    // totalQuestions,
+    formData,
+    feedback,
+    timeElapsed,
+  } = state;
+  // const completionRate = Math.round(
+  //   (completedQuestions / totalQuestions) * 100
+  // );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -55,77 +94,138 @@ export default function AIInterviewComplete() {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 text-center bg-gradient-to-r from-blue-500/10 to-blue-600/10 border-blue-200/50">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center">
-                <BarChart3 className="h-6 w-6 text-blue-600" />
+        {/* AI Feedback */}
+        {feedback && (
+          <Card className="p-8 mb-8">
+            <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+              <Brain className="h-5 w-5 text-indigo-600" />
+              AI Performance Feedback
+            </h2>
+
+            {/* Ratings */}
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Code className="h-4 w-4 text-blue-600" />
+                      Technical Skills
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {feedback.rating.technicalSkills}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{
+                        width: `${(feedback.rating.technicalSkills / 10) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4 text-green-600" />
+                      Communication
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {feedback.rating.communication}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-green-600 h-2 rounded-full"
+                      style={{
+                        width: `${(feedback.rating.communication / 10) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Lightbulb className="h-4 w-4 text-yellow-600" />
+                      Problem Solving
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {feedback.rating.problemSolving}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-yellow-600 h-2 rounded-full"
+                      style={{
+                        width: `${(feedback.rating.problemSolving / 10) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium flex items-center gap-2">
+                      <Award className="h-4 w-4 text-purple-600" />
+                      Experience
+                    </span>
+                    <span className="text-sm text-gray-600">
+                      {feedback.rating.experience}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-purple-600 h-2 rounded-full"
+                      style={{
+                        width: `${(feedback.rating.experience / 10) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <h3 className="text-2xl font-bold text-blue-600 mb-1">
-              {completedQuestions}
-            </h3>
-            <p className="text-blue-600/80 text-sm">Questions Completed</p>
-          </Card>
 
-          <Card className="p-6 text-center bg-gradient-to-r from-green-500/10 to-emerald-600/10 border-green-200/50">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                <Trophy className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-green-600 mb-1">
-              {completionRate}%
-            </h3>
-            <p className="text-green-600/80 text-sm">Completion Rate</p>
-          </Card>
-
-          <Card className="p-6 text-center bg-gradient-to-r from-purple-500/10 to-violet-600/10 border-purple-200/50">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-purple-600" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-purple-600 mb-1">
-              {formData.type}
-            </h3>
-            <p className="text-purple-600/80 text-sm">Interview Type</p>
-          </Card>
-        </div>
-
-        {/* Interview Summary */}
-        <Card className="p-8 mb-8">
-          <h2 className="text-xl font-semibold mb-6">Interview Summary</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-medium text-gray-600 dark:text-gray-400 mb-2">
-                Position
+            {/* Summary */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gray-600" />
+                Performance Summary
               </h3>
-              <p className="font-semibold">{formData.jobPosition}</p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-600 dark:text-gray-400 mb-2">
-                Duration
-              </h3>
-              <p className="font-semibold">{formData.duration}</p>
-            </div>
-            <div>
-              <h3 className="font-medium text-gray-600 dark:text-gray-400 mb-2">
-                Questions Answered
-              </h3>
-              <p className="font-semibold">
-                {completedQuestions} of {totalQuestions}
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                {feedback.summary}
               </p>
             </div>
+
+            {/* Recommendations */}
             <div>
-              <h3 className="font-medium text-gray-600 dark:text-gray-400 mb-2">
-                Interview Type
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Target className="h-4 w-4 text-indigo-600" />
+                Recommendations for Improvement
               </h3>
-              <p className="font-semibold">{formData.type}</p>
+              <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg">
+                <p className="text-indigo-800 dark:text-indigo-200">
+                  {feedback.recommendation}
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        )}
+
+        {timeElapsed && (
+          <Card className="p-6 mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-200/50">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-amber-600" />
+              <span className="font-semibold text-amber-800 dark:text-amber-200">
+                Interview Duration: {Math.floor(timeElapsed / 60)}m{" "}
+                {timeElapsed % 60}s
+              </span>
+            </div>
+          </Card>
+        )}
 
         {/* Next Steps */}
         <Card className="p-8 mb-8 bg-gradient-to-r from-blue-500/5 to-indigo-500/5 border-blue-200/50">
