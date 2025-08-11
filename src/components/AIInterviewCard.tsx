@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Mic, Brain, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import Spline from "@splinetool/react-spline";
 interface AIInterviewCardProps {
   userType: "interviewer" | "candidate";
 }
@@ -74,8 +74,20 @@ export default function AIInterviewCard({ userType }: AIInterviewCardProps) {
       </div>
 
       <div className="relative p-6">
+        {/* AI Model Container */}
+        <div className="absolute top-4 right-4 w-32 h-32 overflow-hidden rounded-lg">
+          <Spline
+            scene="https://prod.spline.design/wDg4sVxPhE0Qbpbt/scene.splinecode"
+            className="w-full h-full scale-150"
+            style={{
+              background: "transparent",
+              filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.1))",
+            }}
+          />
+        </div>
+
         {/* Compact Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 pr-36">
           <div className="flex items-center gap-3">
             <div
               className={`p-3 rounded-lg bg-gradient-to-r ${config.gradient} shadow-md`}

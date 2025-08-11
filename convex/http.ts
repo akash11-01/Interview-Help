@@ -141,83 +141,6 @@ http.route({
       // OpenRouter API configuration
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-      // if (!OPENROUTER_API_KEY) {
-      //   console.error("OpenRouter API key not found in environment variables");
-      //   // Fallback to test questions if API key is missing
-      //   const testQuestions = [
-      //     {
-      //       question: "Tell me about yourself and your experience.",
-      //       type: "Behavioral",
-      //     },
-      //     {
-      //       question: `Why are you interested in this ${jobPosition} position?`,
-      //       type: "Behavioral",
-      //     },
-      //     {
-      //       question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
-      //       type: "Technical",
-      //     },
-      //     {
-      //       question:
-      //         "Describe a challenging project you've worked on recently.",
-      //       type: "Experience",
-      //     },
-      //     {
-      //       question:
-      //         "How do you handle working under pressure and tight deadlines?",
-      //       type: "Behavioral",
-      //     },
-      //     {
-      //       question: `What do you know about our company and why do you want to work here?`,
-      //       type: "Behavioral",
-      //     },
-      //   ];
-
-      //   // Store the fallback questions in the database if userId is provided
-      //   let fallbackAiInterviewId = null;
-      //   if (userId) {
-      //     try {
-      //       fallbackAiInterviewId = await ctx.runMutation(
-      //         api.aiInterviews.createAiInterview,
-      //         {
-      //           jobPosition,
-      //           jobDescription,
-      //           duration,
-      //           type,
-      //           questions: testQuestions,
-      //           userId,
-      //           source: "fallback",
-      //         }
-      //       );
-      //       console.log(
-      //         "Fallback AI Interview stored in database with ID:",
-      //         fallbackAiInterviewId
-      //       );
-      //     } catch (dbError) {
-      //       console.error(
-      //         "Error storing fallback AI interview in database:",
-      //         dbError
-      //       );
-      //     }
-      //   }
-
-      //   return new Response(
-      //     JSON.stringify({
-      //       success: true,
-      //       interviewQuestions: testQuestions,
-      //       aiInterviewId: fallbackAiInterviewId,
-      //       metadata: {
-      //         jobPosition,
-      //         duration,
-      //         type,
-      //         generatedAt: new Date().toISOString(),
-      //         source: "fallback",
-      //       },
-      //     }),
-      //     { status: 200, headers }
-      //   );
-      // }
-
       // Create prompt for AI interview questions
       const prompt = `Generate ${duration === "15 minutes" ? 4 : duration === "30 minutes" ? 6 : 8} interview questions for a ${jobPosition} position.
 
@@ -246,7 +169,7 @@ Make sure the questions are relevant to the job position and description provide
           headers: {
             Authorization: `Bearer ${OPENROUTER_API_KEY}`,
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://interview-platform.vercel.app", // Your site URL
+            "HTTP-Referer": "https://hire-hack.netlify.app", // Your site URL
             "X-Title": "AI Interview Platform", // Your site title
           },
           body: JSON.stringify({
@@ -292,36 +215,6 @@ Make sure the questions are relevant to the job position and description provide
       } catch (parseError) {
         console.error("Failed to parse AI response:", parseError);
         console.log("Raw AI content:", aiContent);
-
-        // Fallback to test questions if parsing fails
-        // interviewQuestions = [
-        //   {
-        //     question: "Tell me about yourself and your experience.",
-        //     type: "Behavioral",
-        //   },
-        //   {
-        //     question: `Why are you interested in this ${jobPosition} position?`,
-        //     type: "Behavioral",
-        //   },
-        //   {
-        //     question: `What technical skills do you have that make you suitable for this ${jobPosition} role?`,
-        //     type: "Technical",
-        //   },
-        //   {
-        //     question:
-        //       "Describe a challenging project you've worked on recently.",
-        //     type: "Experience",
-        //   },
-        //   {
-        //     question:
-        //       "How do you handle working under pressure and tight deadlines?",
-        //     type: "Behavioral",
-        //   },
-        //   {
-        //     question: `What do you know about our company and why do you want to work here?`,
-        //     type: "Behavioral",
-        //   },
-        // ];
       }
 
       console.log("Generated questions:", interviewQuestions);
@@ -553,7 +446,7 @@ Focus on:
           headers: {
             Authorization: `Bearer ${OPENROUTER_API_KEY}`,
             "Content-Type": "application/json",
-            "HTTP-Referer": "https://interview-platform.vercel.app",
+            "HTTP-Referer": "https://hire-hack.netlify.app",
             "X-Title": "AI Interview Platform",
           },
           body: JSON.stringify({
