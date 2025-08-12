@@ -13,7 +13,7 @@ import {
   RotateCcw,
   Target,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface ConversationMessage {
@@ -52,6 +52,12 @@ export default function AIInterviewComplete() {
   const location = useLocation();
   const navigate = useNavigate();
   const state = location.state as LocationState;
+  const [feedback, setFeedback] = useState<FeedbackData | null>(
+    state?.feedback || null
+  );
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(
+    !state?.feedback
+  );
 
   // Redirect if no data is available
   useEffect(() => {
@@ -59,6 +65,61 @@ export default function AIInterviewComplete() {
       navigate("/ai-interview");
     }
   }, [state, navigate]);
+
+  // Generate feedback if not provided
+  useEffect(() => {
+    const generateFeedback = async () => {
+      if (
+        !state?.feedback &&
+        state?.conversation &&
+        state.conversation.length > 0 &&
+        !feedback
+      ) {
+        console.log("Generating AI feedback on complete page...");
+        setIsGeneratingFeedback(true);
+
+        try {
+          const response = await fetch(
+            `${import.meta.env.VITE_CONVEX_HTTP_URL}/generate-feedback`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                conversation: state.conversation,
+                jobPosition: state.formData?.jobPosition || "Unknown Position",
+              }),
+            }
+          );
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+              setFeedback(result.feedback);
+              console.log(
+                "AI feedback generated successfully:",
+                result.feedback
+              );
+            } else {
+              console.error("Feedback generation failed:", result.error);
+            }
+          } else {
+            console.error(
+              "Failed to generate feedback. Status:",
+              response.status
+            );
+          }
+        } catch (error) {
+          console.error("Error generating AI feedback:", error);
+        } finally {
+          setIsGeneratingFeedback(false);
+        }
+      }
+    };
+
+    generateFeedback();
+  }, [state, feedback]);
 
   if (!state?.completedQuestions || !state?.formData) {
     return null;
@@ -68,7 +129,6 @@ export default function AIInterviewComplete() {
     // completedQuestions,
     // totalQuestions,
     formData,
-    feedback,
     timeElapsed,
   } = state;
   // const completionRate = Math.round(
@@ -95,7 +155,31 @@ export default function AIInterviewComplete() {
         </div>
 
         {/* AI Feedback */}
-        {feedback && (
+        {isGeneratingFeedback ? (
+          <Card className="p-8 mb-8">
+            <div className="text-center">
+              <div className="flex items-center justify-center mb-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+              </div>
+              <h2 className="text-xl font-semibold mb-2 flex items-center justify-center gap-2">
+                <Brain className="h-5 w-5 text-indigo-600" />
+                Generating AI Performance Feedback
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">
+                Our AI is analyzing your responses and preparing detailed
+                feedback...
+              </p>
+              <div className="mt-4">
+                <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-2 w-full">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full animate-pulse"
+                    style={{ width: "75%" }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        ) : feedback ? (
           <Card className="p-8 mb-8">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
               <Brain className="h-5 w-5 text-indigo-600" />
@@ -213,7 +297,7 @@ export default function AIInterviewComplete() {
               </div>
             </div>
           </Card>
-        )}
+        ) : null}
 
         {timeElapsed && (
           <Card className="p-6 mb-8 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-200/50">

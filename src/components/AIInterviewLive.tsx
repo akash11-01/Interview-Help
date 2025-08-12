@@ -62,6 +62,7 @@ export default function AIInterviewLive() {
   const [currentMessage, setCurrentMessage] =
     useState<ConversationMessage | null>(null);
   const [interviewEnded, setInterviewEnded] = useState(false);
+  const [feedbackGenerated, setFeedbackGenerated] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -130,8 +131,8 @@ export default function AIInterviewLive() {
     if (isCallActive) {
       const handleBeforeUnload = (event: BeforeUnloadEvent) => {
         event.preventDefault();
-        event.returnValue =
-          "Are you sure you want to leave? Your interview is still in progress.";
+        // event.returnValue =
+        //   "Are you sure you want to leave? Your interview is still in progress.";
         return "Are you sure you want to leave? Your interview is still in progress.";
       };
 
@@ -319,6 +320,35 @@ export default function AIInterviewLive() {
     }
   }, [mediaStream, isCameraOn]);
 
+  // Handle navigation when interview ends
+  useEffect(() => {
+    if (interviewEnded && !isCallActive && !feedbackGenerated) {
+      setFeedbackGenerated(true);
+
+      // Navigate immediately to complete page
+      navigate("/ai-interview/complete", {
+        state: {
+          completedQuestions: state?.questionsList?.length || 0,
+          totalQuestions: state?.questionsList?.length || 0,
+          formData: state?.formData,
+          aiInterviewId: state?.aiInterviewId,
+          timeElapsed,
+          conversation,
+          feedback: null, // Will be generated on the complete page
+        },
+        replace: true,
+      });
+    }
+  }, [
+    interviewEnded,
+    isCallActive,
+    feedbackGenerated,
+    timeElapsed,
+    conversation,
+    navigate,
+    state,
+  ]);
+
   const startCall = () => {
     if (!vapi || !state?.questionsList || !state?.formData) return;
 
@@ -408,54 +438,21 @@ Key Points:
       setIsCallActive(false);
     }
     setInterviewEnded(true);
+    setFeedbackGenerated(true); // Prevent the useEffect from also navigating
 
-    // Generate feedback from conversation
-    let feedbackData = null;
-    if (conversation.length > 0) {
-      try {
-        console.log("Generating feedback from conversation...", conversation);
-
-        const response = await fetch(
-          `${import.meta.env.VITE_CONVEX_HTTP_URL}/generate-feedback`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              conversation,
-              jobPosition: state?.formData?.jobPosition || "Unknown Position",
-            }),
-          }
-        );
-
-        if (response.ok) {
-          const result = await response.json();
-          if (result.success) {
-            feedbackData = result.feedback;
-            console.log("Feedback generated successfully:", feedbackData);
-          }
-        }
-      } catch (error) {
-        console.error("Error generating feedback:", error);
-      }
-    }
-
-    // Add a small delay before navigation to ensure state is set
-    setTimeout(() => {
-      navigate("/ai-interview/complete", {
-        state: {
-          completedQuestions: state?.questionsList?.length || 0,
-          totalQuestions: state?.questionsList?.length || 0,
-          formData: state?.formData,
-          aiInterviewId: state?.aiInterviewId,
-          timeElapsed,
-          conversation,
-          feedback: feedbackData,
-        },
-        replace: true, // This prevents going back to this page
-      });
-    }, 500); // Increased delay to allow feedback generation
+    // Navigate immediately to complete page
+    navigate("/ai-interview/complete", {
+      state: {
+        completedQuestions: state?.questionsList?.length || 0,
+        totalQuestions: state?.questionsList?.length || 0,
+        formData: state?.formData,
+        aiInterviewId: state?.aiInterviewId,
+        timeElapsed,
+        conversation,
+        feedback: null, // Will be generated on the complete page
+      },
+      replace: true, // This prevents going back to this page
+    });
   };
 
   // Show loading if no interview data
