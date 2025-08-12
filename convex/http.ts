@@ -10,7 +10,7 @@ http.route({
   path: "/clerk-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const webhookSecret = "whsec_cj2jZfZKco4v7bjxsl1/1PE+O/lvC7KK";
+    const webhookSecret = process.env.WEBHOOK_SECRET;
     if (!webhookSecret) {
       throw new Error("CLERK_WEBHOOK_SECRET is not set");
     }
