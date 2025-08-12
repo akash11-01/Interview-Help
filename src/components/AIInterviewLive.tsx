@@ -165,7 +165,7 @@ export default function AIInterviewLive() {
   // Redirect if no interview data
   useEffect(() => {
     if (!state?.questionsList || !state?.formData) {
-      navigate("/ai-interview");
+      navigate("/");
     }
   }, [state, navigate]);
 
@@ -498,7 +498,7 @@ Key Points:
           <Card className="bg-white/10 backdrop-blur-sm border-white/10 h-[400px] flex flex-col gap-4 items-center justify-center relative overflow-hidden">
             {/* Spline 3D Model */}
             <div className="relative w-full h-full flex items-center justify-center">
-              <div className="w-full h-full ml-16 flex items-center justify-center">
+              <div className="w-full h-full flex items-center justify-center">
                 <Spline
                   scene="https://prod.spline.design/WW8S3qmY9K7DUqfh/scene.splinecode"
                   className="w-full h-full"
@@ -572,8 +572,8 @@ Key Points:
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-4 items-center justify-center">
-                  <Avatar className="w-24 h-24 ring-4 ring-white/20">
+                <div className="flex flex-col gap-2 items-center justify-center">
+                  <Avatar className="w-18 h-18 ring-4 mt-18 ring-white/20">
                     <AvatarImage
                       src={user?.imageUrl}
                       alt={user?.fullName || "User"}
@@ -603,19 +603,6 @@ Key Points:
             </div>
 
             {/* Interview Info - Always visible */}
-            <div className="absolute bottom-4 right-4 text-center space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full">
-                <Clock className="h-4 w-4 text-blue-400" />
-                <span className="text-blue-400 text-sm">
-                  Duration: {state.formData.duration} min
-                </span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full">
-                <span className="text-white/70 text-sm">
-                  Type: {state.formData.type}
-                </span>
-              </div>
-            </div>
           </Card>
         </div>
 
