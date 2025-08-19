@@ -142,7 +142,7 @@ http.route({
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
       // Create prompt for AI interview questions
-      const prompt = `Generate ${duration === "15 minutes" ? 4 : duration === "30 minutes" ? 6 : 8} interview questions for a ${jobPosition} position.
+      const prompt = `Generate ${duration === "15 minutes" ? 8 : duration === "30 minutes" ? 16 : 20} interview questions for a ${jobPosition} position.
 
 Job Description: ${jobDescription}
 Interview Type: ${type}
