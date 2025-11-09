@@ -288,7 +288,7 @@ export default function AiQuestionsList() {
     if (!vapiWebToken || !vapiWorkflowId) {
       // If VAPI is not configured, use the regular AI interview live page
       console.warn("VAPI not configured, using regular AI interview");
-      navigate("/ai-interview/complete", {
+      navigate("/ai-interview/live", {
         state: {
           questionsList: state.questionsList,
           formData: state.formData,

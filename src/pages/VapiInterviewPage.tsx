@@ -11,8 +11,6 @@ import {
   MicOff,
   PhoneOff,
   Timer,
-  Camera,
-  CameraOff,
   ArrowLeft,
 } from "lucide-react";
 import Vapi from "@vapi-ai/web";
