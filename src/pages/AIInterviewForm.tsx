@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bot, Clock, Briefcase, FileText, Sparkles } from "lucide-react";
+import { platformDebugger } from "@/utils/debugger";
 // import { QUESTION_PROMPT } from "@/constants";
 
 interface FormData {
@@ -43,46 +44,22 @@ export default function AIInterviewForm() {
     setIsLoading(true);
 
     try {
-      // Use the HTTP Actions URL for API calls
-      const convexHttpUrl = import.meta.env.VITE_CONVEX_HTTP_URL;
-      const apiUrl = `${convexHttpUrl}/generate-questions`;
-
-      console.log("=== API CALL DEBUG INFO ===");
-      console.log("Convex HTTP URL from env:", convexHttpUrl);
-      console.log("Full API URL:", apiUrl);
-      console.log("Form data being sent:", formData);
-      console.log("User ID:", user?.id);
-
       // Prepare data to send including userId for database storage
       const requestData = {
         ...formData,
         userId: user?.id, // Include user ID for database storage
       };
 
-      // Make POST API call to generate questions
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
+      // Use debugger for better error tracking
+      const debugResult =
+        await platformDebugger.debugAIQuestionGeneration(requestData);
 
-      console.log("Response received:");
-      console.log("- Status:", response.status);
-      console.log("- Status Text:", response.statusText);
-      console.log("- Headers:", Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API Error Details:");
-        console.error("- Status:", response.status);
-        console.error("- Response text:", errorText);
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      if (!debugResult.success) {
+        throw new Error(debugResult.error || "AI question generation failed");
       }
 
-      const result = await response.json();
-      console.log("API Response parsed:", result);
+      const result = debugResult.data;
+      console.log("AI Questions generated successfully:", result);
 
       // Navigate directly to questions page with the generated interview details
       navigate("/ai-interview/questions", {
@@ -95,15 +72,17 @@ export default function AIInterviewForm() {
       });
     } catch (error) {
       console.error("Full error details:", error);
-      if (error instanceof Error) {
-        console.error("Error name:", error.name);
-        console.error("Error message:", error.message);
-        console.error("Error stack:", error.stack);
-      }
-      // Handle error - you might want to show a toast or error message
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+
+      // Show user-friendly error message
       alert(
-        `Error: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Error generating AI questions: ${errorMessage}\n\nPlease check the console for detailed debugging information.`
       );
+
+      // Run diagnostic for troubleshooting
+      console.log("Running diagnostic to help troubleshoot the issue...");
+      platformDebugger.runFullDiagnostic();
     } finally {
       setIsLoading(false);
     }

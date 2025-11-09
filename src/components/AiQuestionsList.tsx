@@ -129,23 +129,94 @@ export default function AiQuestionsList() {
 
   // VAPI Integration
   useEffect(() => {
-    // Load VAPI SDK
-    const script = document.createElement("script");
-    script.src =
-      "https://cdn.jsdelivr.net/npm/@vapi-ai/web@latest/dist/index.js";
-    script.onload = () => {
-      if (window.Vapi) {
-        const vapi = new window.Vapi(
-          import.meta.env.VITE_PUBLIC_VAPI_WEB_TOKEN
-        );
-        setVapiAssistant(vapi);
-      }
-    };
-    document.body.appendChild(script);
+    // Check if VAPI environment variables are available
+    const vapiWebToken = import.meta.env.VITE_PUBLIC_VAPI_WEB_TOKEN;
+    const vapiWorkflowId = import.meta.env.VITE_PUBLIC_VAPI_WORKFLOW_ID;
 
-    return () => {
-      document.body.removeChild(script);
-    };
+    if (!vapiWebToken || !vapiWorkflowId) {
+      console.warn(
+        "VAPI environment variables not configured, VAPI features disabled"
+      );
+      return;
+    }
+
+    // Use the VAPI package directly instead of loading from CDN
+    try {
+      // Try to import VAPI from the installed package
+      import("@vapi-ai/web")
+        .then((VapiModule) => {
+          try {
+            const Vapi = VapiModule.default || VapiModule;
+            const vapi = new Vapi(vapiWebToken);
+            setVapiAssistant(vapi);
+            console.log("VAPI initialized successfully from package");
+          } catch (error) {
+            console.error("Error initializing VAPI from package:", error);
+            // Fallback to CDN loading
+            loadVapiFromCDN(vapiWebToken);
+          }
+        })
+        .catch(() => {
+          console.warn("VAPI package not found, trying CDN fallback");
+          loadVapiFromCDN(vapiWebToken);
+        });
+    } catch (error) {
+      console.error("Error with VAPI package import:", error);
+      loadVapiFromCDN(vapiWebToken);
+    }
+
+    function loadVapiFromCDN(token: string) {
+      // Check if script already exists
+      const existingScript = document.querySelector('script[src*="vapi-ai"]');
+      if (existingScript) {
+        console.log("VAPI script already loaded");
+        if (window.Vapi) {
+          try {
+            const vapi = new window.Vapi(token);
+            setVapiAssistant(vapi);
+            console.log("VAPI initialized from existing script");
+          } catch (error) {
+            console.error(
+              "Error initializing VAPI from existing script:",
+              error
+            );
+          }
+        }
+        return;
+      }
+
+      // Load VAPI SDK from CDN
+      const script = document.createElement("script");
+      script.src =
+        "https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.8/dist/index.js";
+      script.async = true;
+      script.crossOrigin = "anonymous";
+
+      script.onload = () => {
+        console.log("VAPI SDK loaded from CDN");
+        // Wait a bit for the library to initialize
+        setTimeout(() => {
+          try {
+            if (window.Vapi) {
+              const vapi = new window.Vapi(token);
+              setVapiAssistant(vapi);
+              console.log("VAPI initialized successfully from CDN");
+            } else {
+              console.error("VAPI library not available after loading");
+            }
+          } catch (error) {
+            console.error("Error initializing VAPI from CDN:", error);
+          }
+        }, 100);
+      };
+
+      script.onerror = (error) => {
+        console.error("Failed to load VAPI SDK from CDN:", error);
+        console.warn("VAPI features will be disabled");
+      };
+
+      document.head.appendChild(script);
+    }
   }, []);
 
   const startVoiceQuestion = async () => {
@@ -210,14 +281,32 @@ export default function AiQuestionsList() {
   };
 
   const handleStartInterview = () => {
-    navigate("/ai-interview/live", {
-      state: {
-        questionsList: state.questionsList,
-        formData: state.formData,
-        aiInterviewId: state.aiInterviewId,
-        metadata: state.metadata,
-      },
-    });
+    // Check if VAPI is available and properly configured
+    const vapiWebToken = import.meta.env.VITE_PUBLIC_VAPI_WEB_TOKEN;
+    const vapiWorkflowId = import.meta.env.VITE_PUBLIC_VAPI_WORKFLOW_ID;
+
+    if (!vapiWebToken || !vapiWorkflowId) {
+      // If VAPI is not configured, use the regular AI interview live page
+      console.warn("VAPI not configured, using regular AI interview");
+      navigate("/ai-interview/live", {
+        state: {
+          questionsList: state.questionsList,
+          formData: state.formData,
+          aiInterviewId: state.aiInterviewId,
+          metadata: state.metadata,
+        },
+      });
+    } else {
+      // Use VAPI interview page if configured
+      navigate("/ai-interview/vapi", {
+        state: {
+          questionsList: state.questionsList,
+          formData: state.formData,
+          aiInterviewId: state.aiInterviewId,
+          metadata: state.metadata,
+        },
+      });
+    }
   };
 
   const handleNextQuestion = () => {
@@ -231,6 +320,16 @@ export default function AiQuestionsList() {
           completedQuestions: completedQuestions.length + 1,
           totalQuestions: questionsList.length,
           formData,
+          aiInterviewId: state?.aiInterviewId,
+          metadata: state?.metadata,
+          timeElapsed: Math.floor(
+            (Date.now() -
+              (state?.metadata?.generatedAt
+                ? new Date(state.metadata.generatedAt).getTime()
+                : Date.now())) /
+              1000
+          ),
+          interviewType: "manual-review", // Indicates this was a manual review-style interview
         },
       });
     }

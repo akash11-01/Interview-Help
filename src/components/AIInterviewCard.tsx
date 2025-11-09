@@ -12,11 +12,11 @@ export default function AIInterviewCard({ userType }: AIInterviewCardProps) {
 
   const handleStartAIInterview = () => {
     // Navigate to AI Interview form page for candidates and setup page for interviewers
-    navigate("/ai-interview/setup");
-    // if (userType === "candidate") {
-    // } else {
-    //   navigate("/ai-interview");
-    // }
+    if (userType === "candidate") {
+      navigate("/ai-interview/setup");
+    } else {
+      navigate("/ai-interview/setup");
+    }
   };
 
   const cardConfig = {

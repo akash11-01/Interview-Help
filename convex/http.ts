@@ -141,6 +141,53 @@ http.route({
       // OpenRouter API configuration
       const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
+      if (!OPENROUTER_API_KEY) {
+        console.error("OPENROUTER_API_KEY not found in environment variables");
+        throw new Error("OpenRouter API key is not configured");
+      }
+
+      // Test API key validity with a simple request first
+      console.log("Testing OpenRouter API key validity...");
+      try {
+        const testResponse = await fetch(
+          "https://openrouter.ai/api/v1/models",
+          {
+            headers: {
+              Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!testResponse.ok) {
+          console.error(
+            "OpenRouter API key test failed:",
+            testResponse.status,
+            testResponse.statusText
+          );
+          if (testResponse.status === 401) {
+            throw new Error(
+              "Invalid OpenRouter API key. Please check your credentials."
+            );
+          } else if (testResponse.status === 403) {
+            throw new Error(
+              "OpenRouter API key does not have sufficient permissions."
+            );
+          }
+        } else {
+          console.log("OpenRouter API key is valid");
+        }
+      } catch (error) {
+        console.error("Error testing OpenRouter API key:", error);
+        if (error instanceof Error && error.message.includes("API key")) {
+          throw error;
+        }
+        // If it's a network error, continue with the main request
+        console.warn(
+          "Could not validate API key due to network error, proceeding with request"
+        );
+      }
+
       // Create prompt for AI interview questions
       const prompt = `Generate ${duration === "15 minutes" ? 8 : duration === "30 minutes" ? 16 : 20} interview questions for a ${jobPosition} position.
 
@@ -161,41 +208,77 @@ Make sure the questions are relevant to the job position and description provide
 
       console.log("Sending request to OpenRouter API...");
 
-      // Call OpenRouter API
-      const response = await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://hire-hack.netlify.app", // Your site URL
-            "X-Title": "AI Interview Platform", // Your site title
-          },
-          body: JSON.stringify({
-            model: "deepseek/deepseek-r1-0528:free",
-            messages: [
-              {
-                role: "user",
-                content: prompt,
-              },
-            ],
-            temperature: 0.7,
-            max_tokens: 1500,
-          }),
-        }
-      );
+      // List of models to try in order of preference
+      const modelsToTry = [
+        "meta-llama/llama-3.1-8b-instruct:free",
+        "mistralai/mistral-7b-instruct:free",
+        "google/gemma-7b-it:free",
+        "microsoft/wizardlm-2-8x22b:nitro",
+        "openai/gpt-3.5-turbo",
+      ];
 
-      if (!response.ok) {
-        throw new Error(
-          `OpenRouter API error: ${response.status} ${response.statusText}`
-        );
+      let lastError = null;
+      let result = null;
+
+      // Try each model until one works
+      for (const model of modelsToTry) {
+        try {
+          console.log(`Trying model: ${model}`);
+
+          // Call OpenRouter API
+          const response = await fetch(
+            "https://openrouter.ai/api/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://hire-hack.netlify.app", // Your site URL
+                "X-Title": "AI Interview Platform", // Your site title
+              },
+              body: JSON.stringify({
+                model: model,
+                messages: [
+                  {
+                    role: "user",
+                    content: prompt,
+                  },
+                ],
+                temperature: 0.7,
+                max_tokens: 1500,
+              }),
+            }
+          );
+
+          console.log(`Response status for ${model}:`, response.status);
+
+          if (response.ok) {
+            result = await response.json();
+            console.log(`Successfully used model: ${model}`);
+            break;
+          } else {
+            const errorText = await response.text();
+            console.warn(
+              `Model ${model} failed with ${response.status}: ${errorText}`
+            );
+            lastError = new Error(
+              `${model}: ${response.status} ${response.statusText}`
+            );
+            continue;
+          }
+        } catch (error) {
+          console.warn(`Error with model ${model}:`, error);
+          lastError = error;
+          continue;
+        }
       }
 
-      const aiResponse = await response.json();
-      console.log("OpenRouter API response:", aiResponse);
+      if (!result) {
+        throw lastError || new Error("All models failed to generate questions");
+      }
+      console.log("OpenRouter API response:", result);
 
-      const aiContent = aiResponse.choices[0]?.message?.content;
+      const aiContent = result.choices[0]?.message?.content;
 
       if (!aiContent) {
         throw new Error("No content received from AI");
@@ -209,12 +292,94 @@ Make sure the questions are relevant to the job position and description provide
         if (jsonMatch) {
           interviewQuestions = JSON.parse(jsonMatch[0]);
         } else {
-          // If no JSON found, parse manually
-          throw new Error("No JSON array found in AI response");
+          // If no JSON found, try to parse the entire content
+          try {
+            interviewQuestions = JSON.parse(aiContent);
+          } catch (secondParseError) {
+            console.log("No valid JSON found, creating fallback questions");
+            throw new Error("No JSON array found in AI response");
+          }
         }
+
+        // Validate the structure of questions
+        if (!Array.isArray(interviewQuestions)) {
+          throw new Error("AI response is not an array");
+        }
+
+        // Ensure each question has required fields
+        interviewQuestions = interviewQuestions.map((q, index) => ({
+          question: q.question || `Generated question ${index + 1}`,
+          type: q.type || "General",
+        }));
       } catch (parseError) {
         console.error("Failed to parse AI response:", parseError);
         console.log("Raw AI content:", aiContent);
+
+        // Create fallback questions based on the job position and type
+        const fallbackQuestions = [
+          {
+            question: `Tell me about yourself and your experience related to ${jobPosition}.`,
+            type: "Behavioral",
+          },
+          {
+            question: `Why are you interested in this ${jobPosition} position?`,
+            type: "Behavioral",
+          },
+          {
+            question:
+              "What are your key technical skills relevant to this role?",
+            type: "Technical",
+          },
+          {
+            question:
+              "Describe a challenging project you've worked on recently.",
+            type: "Experience",
+          },
+          {
+            question:
+              "How do you handle working under pressure and tight deadlines?",
+            type: "Behavioral",
+          },
+          {
+            question: "Where do you see yourself in 5 years?",
+            type: "Behavioral",
+          },
+        ];
+
+        // Add more questions based on duration
+        if (duration === "30 minutes" || duration === "45 minutes") {
+          fallbackQuestions.push(
+            {
+              question: "What's your approach to learning new technologies?",
+              type: "Technical",
+            },
+            {
+              question:
+                "Tell me about a time you had to work with a difficult team member.",
+              type: "Behavioral",
+            }
+          );
+        }
+
+        if (
+          duration === "45 minutes" ||
+          duration === "1 hour" ||
+          duration === "1.5 hours"
+        ) {
+          fallbackQuestions.push(
+            {
+              question:
+                "How do you prioritize tasks when everything seems urgent?",
+              type: "Behavioral",
+            },
+            {
+              question: "Describe your ideal work environment.",
+              type: "Behavioral",
+            }
+          );
+        }
+
+        interviewQuestions = fallbackQuestions;
       }
 
       console.log("Generated questions:", interviewQuestions);

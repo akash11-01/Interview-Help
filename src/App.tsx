@@ -13,11 +13,19 @@ import FeedbackPage from "./pages/FeedbackPage";
 import AIInterviewPage from "./pages/AIInterviewPage";
 import AIInterviewForm from "./pages/AIInterviewForm";
 import AIInterviewComplete from "./pages/AIInterviewComplete";
+import VapiInterviewPage from "./pages/VapiInterviewPage";
 import AiQuestionsList from "./components/AiQuestionsList";
 import AIInterviewLive from "./components/AIInterviewLive";
 import AuthenticatedWrapper from "./components/AuthenticatedWrapper";
+import { useEffect } from "react";
+import { logEnvironmentStatus } from "./utils/envValidation";
+import "./utils/debugger"; // Initialize platform debugger
 
 export default function App() {
+  // Validate environment variables on app startup
+  useEffect(() => {
+    logEnvironmentStatus();
+  }, []);
   return (
     <>
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -76,6 +84,10 @@ export default function App() {
                               element={<AIInterviewLive />}
                             />
                             <Route
+                              path="/ai-interview/vapi"
+                              element={<VapiInterviewPage />}
+                            />
+                            <Route
                               path="/ai-interview/complete"
                               element={<AIInterviewComplete />}
                             />
@@ -110,6 +122,10 @@ export default function App() {
                 />
                 <Route
                   path="/ai-interview/live"
+                  element={<RedirectToSignIn />}
+                />
+                <Route
+                  path="/ai-interview/vapi"
                   element={<RedirectToSignIn />}
                 />
                 <Route
