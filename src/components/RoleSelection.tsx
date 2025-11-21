@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
+import { useUser } from "@clerk/clerk-react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { Users, UserCheck, Loader2 } from "lucide-react";
+import { Users, UserCheck, Loader2, AlertCircle } from "lucide-react";
 
 interface RoleSelectionProps {
   onRoleSelected: () => void;
@@ -14,17 +15,57 @@ function RoleSelection({ onRoleSelected }: RoleSelectionProps) {
     "candidate" | "interviewer" | null
   >(null);
   const [isLoading, setIsLoading] = useState(false);
-  const updateUserRole = useMutation(api.users.updateUserRole);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
+
+  // Use the improved user role update that can create users with proper data
+  const updateUserWithClerkData = useMutation(
+    api.users.updateUserRoleWithClerkData
+  );
 
   const handleRoleSelection = async (role: "candidate" | "interviewer") => {
+    if (!user) {
+      setError("User not loaded. Please try again.");
+      return;
+    }
+
     setSelectedRole(role);
     setIsLoading(true);
+    setError(null);
 
     try {
-      await updateUserRole({ role });
+      console.log("Updating user role to:", role);
+      console.log("Clerk user data:", {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        fullName: user.fullName,
+        email: user.primaryEmailAddress?.emailAddress,
+        imageUrl: user.imageUrl,
+      });
+
+      const result = await updateUserWithClerkData({
+        role,
+        clerkId: user.id,
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        fullName: user.fullName || undefined,
+        email:
+          user.primaryEmailAddress?.emailAddress ||
+          user.emailAddresses?.[0]?.emailAddress ||
+          undefined,
+        imageUrl: user.imageUrl || undefined,
+      });
+
+      console.log("Role update successful:", result);
       onRoleSelected();
     } catch (error) {
       console.error("Failed to update user role:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to update role. Please try again."
+      );
       // Reset selection on error
       setSelectedRole(null);
     } finally {
@@ -43,6 +84,16 @@ function RoleSelection({ onRoleSelected }: RoleSelectionProps) {
             Select your role to get started with the interview platform
           </p>
         </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              <p className="font-medium">Error</p>
+            </div>
+            <p className="text-red-600 dark:text-red-300 mt-1">{error}</p>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Candidate Card */}
